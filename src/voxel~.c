@@ -13,6 +13,9 @@ void *voxel_tilde_new(void) {
     x->vd = vd_new();
     if (!x->vd) return NULL;
 
+    x->frequency = 0.0f;
+    x->out_frequency = outlet_new(&x->x_obj, &s_float);
+
     return (void *) x;
 }
 
@@ -29,7 +32,16 @@ static t_int *voxel_tilde_perform(t_int *w) {
 
     // invoke the vocal detector
     vd_perform(x->vd, in, n);
-    post("freq: %f", 44100 / x->vd->period);
+
+    // output the current frequency
+    float new_frequency;
+    if (x->vd->period < 0.0f) new_frequency = 0.0f;
+    else new_frequency = 44100.0f / x->vd->period;
+
+    if (new_frequency != x->frequency) {
+        x->frequency = new_frequency;
+        outlet_float(x->out_frequency, new_frequency);
+    }
 
     return w;
 }

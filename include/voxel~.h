@@ -16,6 +16,9 @@ typedef struct _voxel_tilde {
     t_sample f;
 
     vocaldetector *vd;
+
+    float frequency;
+    t_outlet *out_frequency;
 } voxel_tilde;
 
 
