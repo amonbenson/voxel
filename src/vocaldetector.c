@@ -6,7 +6,7 @@
 
 
 vocaldetector *vd_new() {
-    printf("vocaldetector: buffersize = %zu, period_min = %zu, period_max = %zu\n",
+    printf("vocaldetector: buffersize = %" PRI_SIZE_T ", period_min = %" PRI_SIZE_T ", period_max = %" PRI_SIZE_T "\n",
         VD_BUFFER_SIZE, VD_PERIOD_MIN, VD_PERIOD_MAX);
 
     vocaldetector *vd = malloc(sizeof(vocaldetector));
@@ -119,7 +119,7 @@ static void vd_process_signal(vocaldetector *vd, float *s, size_t n) {
     vd->write_pos = VD_CIRC_ADD(vd->write_pos, n, VD_BUFFER_SIZE);
 }
 
-static int is_better_period(vocaldetector *vd, float period, float correlation, float best_correlation) {
+static int is_better_period(__attribute__((unused)) vocaldetector *vd, __attribute__((unused)) float period, float correlation, float best_correlation) {
     return correlation * 0.90f > best_correlation;
 }
 
@@ -139,7 +139,7 @@ static void vd_detect_period(vocaldetector *vd) {
     period = 0.0f;
     correlation = 0.0f;
     
-    best_sampled_period = -1;
+    best_sampled_period = 0;
     best_period = -1.0f;
     best_correlation = 0.0f;
 
@@ -158,7 +158,7 @@ static void vd_detect_period(vocaldetector *vd) {
         correlation = vd_bitstream_correlate(vd, a_pos, b_pos, VD_PERIOD_MAX);
         //printf("%04zu..%04zu(%04zu) ", a_pos, b_pos, (size_t) correlation);
 
-        if (best_sampled_period < 0 || is_better_period(vd, period, correlation, best_correlation)) {
+        if (best_sampled_period == 0 || is_better_period(vd, period, correlation, best_correlation)) {
             best_sampled_period = sampled_period;
             best_period = period;
             best_correlation = correlation;
@@ -171,10 +171,8 @@ static void vd_detect_period(vocaldetector *vd) {
 }
 
 void vd_perform(vocaldetector *vd, float *s, size_t n) {
-    float period;
-
     if (!is_valid_block_size(n)) {
-        fprintf(stderr, "vocaldetector: invalid block size: %zu\n", n);
+        fprintf(stderr, "vocaldetector: invalid block size: %" PRI_SIZE_T "\n", n);
         return;
     };
 
@@ -185,10 +183,10 @@ void vd_perform(vocaldetector *vd, float *s, size_t n) {
         //vd_print(vd);
 
         vd_detect_period(vd);
-        printf("period: %f, frequency: %f\n", vd->period, vd->period < 0.0f ? 0.0f : 44100 / vd->period);
+        printf("period: %f, frequency: %f\n", vd->period, 44100 / vd->period);
 
         vd->marked_pos = VD_CIRC_ADD(vd->marked_pos,
-            vd->sampled_period < 0 ? VD_PERIOD_MAX : vd->sampled_period,
+            vd->sampled_period == 0 ? VD_PERIOD_MAX : vd->sampled_period,
             VD_BUFFER_SIZE);
     }
 }

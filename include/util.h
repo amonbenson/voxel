@@ -1,12 +1,23 @@
 #pragma once
 
-
+#include <inttypes.h>
 #ifdef _MSC_VER
     # include <intrin.h>
     # include <nmmintrin.h>
 #endif
 
 
+// conversion type character for size_t
+#if defined(_WIN64)
+    #define PRI_SIZE_T PRIu64
+#elif defined(_WIND32)
+    #define PRI_SIZE_T PRIu32
+#else
+    #define PRI_SIZE_T "zu"
+#endif
+
+
+// builtin functions
 #if defined(__GNUC__)
     #define __util_popcount __builtin_popcount
     #define __util_popcountl __builtin_popcountl
@@ -27,7 +38,6 @@
     #error Unsupported compiler
 #endif
 
-
 #define util_popcount(x) (_Generic((x), \
     unsigned int: __util_popcount, \
     unsigned long: __util_popcountl, \
@@ -39,6 +49,7 @@
     unsigned long long: __util_clzll)(x))
 
 
+// general purpose functions
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) > (b) ? (a) : (b))
 
