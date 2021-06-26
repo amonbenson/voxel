@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "*.h": "c",
+        "Makefile.*": "makefile",
+        "array": "c",
+        "string_view": "c",
+        "initializer_list": "c",
+        "utility": "c",
+        "system_error": "c",
+        "*.tcc": "c",
+        "fstream": "c",
+        "ostream": "c",
+        "sstream": "c",
+        "streambuf": "c",
+        "typeinfo": "c"
+    }
+}

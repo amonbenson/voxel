@@ -1,0 +1,16 @@
+#N canvas 435 199 979 574 12;
+#X obj 213 286 voxel~;
+#X obj 107 73 loadbang;
+#X msg 107 98 \; pd dsp 1;
+#X obj 213 256 osc~ 100;
+#X obj 216 147 hsl 128 15 50 500 1 1 empty empty empty -2 -8 0 10 -262144
+-1 -1 11700 1;
+#X floatatom 213 169 5 0 0 0 - - -;
+#X floatatom 234 221 5 0 0 0 - - -;
+#X obj 234 196 expr 44100 / $f1;
+#X connect 1 0 2 0;
+#X connect 3 0 0 0;
+#X connect 4 0 5 0;
+#X connect 5 0 3 0;
+#X connect 5 0 7 0;
+#X connect 7 0 6 0;
