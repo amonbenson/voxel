@@ -69,9 +69,11 @@ float vd_bitstream_correlate(vocaldetector *vd, size_t a_pos, size_t b_pos, size
     size_t n_blocks, i, a, a_next, a_shift, b, b_next, b_shift, sum;
     
     bs = vd->bitstream;
-    
+
     n_blocks = (n - 1) / VD_BITS_PER_BLOCK + 1; // ceil
     block_endmask = ((vd_block) 1 << (n % VD_BITS_PER_BLOCK)) - 1;
+    if (block_endmask == 0) block_endmask = (vd_block) -1; // if n is a multiple of the block size, set all mask bits
+
     a = a_pos / VD_BITS_PER_BLOCK;
     b = b_pos / VD_BITS_PER_BLOCK;
     a_shift = a_pos % VD_BITS_PER_BLOCK;
