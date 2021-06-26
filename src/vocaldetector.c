@@ -64,18 +64,19 @@ void vd_print(vocaldetector *vd) {
     printf("\n\n");
 }
 
-size_t vd_bitstream_correlate(vocaldetector *vd, size_t a_pos, size_t b_pos, size_t n) {
-    vd_block block_a, block_b, *bs;
-    size_t n_blocks, i, a, a_next, a_shift, b, b_next, b_shift, result;
+float vd_bitstream_correlate(vocaldetector *vd, size_t a_pos, size_t b_pos, size_t n) {
+    vd_block block_a, block_b, block_corr, block_endmask, *bs;
+    size_t n_blocks, i, a, a_next, a_shift, b, b_next, b_shift, sum;
     
     bs = vd->bitstream;
     
     n_blocks = (n - 1) / VD_BITS_PER_BLOCK + 1; // ceil
+    block_endmask = ((vd_block) 1 << (n % VD_BITS_PER_BLOCK)) - 1;
     a = a_pos / VD_BITS_PER_BLOCK;
     b = b_pos / VD_BITS_PER_BLOCK;
     a_shift = a_pos % VD_BITS_PER_BLOCK;
     b_shift = b_pos % VD_BITS_PER_BLOCK;
-    result = 0;
+    sum = 0;
 
     for (i = 0; i < n_blocks; i++, a = a_next, b = b_next) {
         a_next = VD_CIRC_ADD(a, 1, VD_BLOCK_SIZE);
@@ -84,11 +85,13 @@ size_t vd_bitstream_correlate(vocaldetector *vd, size_t a_pos, size_t b_pos, siz
         block_a = bs[a] >> a_shift | bs[a_next] << (VD_BITS_PER_BLOCK - a_shift);
         block_b = bs[b] >> b_shift | bs[b_next] << (VD_BITS_PER_BLOCK - b_shift);
         
-        // correlate
-        result += util_popcount(~(block_a ^ block_b));
+        // correlate using bitwise XNOR
+        block_corr = ~(block_a ^ block_b);
+        if (i == n_blocks - 1) block_corr &= block_endmask;
+        sum += util_popcount(block_corr);
     }
 
-    return result;
+    return (float) sum / (float) n;
 }
 
 static void vd_process_signal(vocaldetector *vd, float *s, size_t n) {
@@ -107,8 +110,7 @@ static void vd_process_signal(vocaldetector *vd, float *s, size_t n) {
         // set each bit where the input signal is positive
         block = 0;
         for (j = 0; j < VD_BITS_PER_BLOCK; j++, s++) {
-            if (*s > 0.0f)
-                block |= (vd_block) 1 << j;
+            if (*s > 0.0f) block |= (vd_block) 1 << j;
         }
 
         vd->bitstream[write_pos_blocks + i] = block;
@@ -155,8 +157,8 @@ static void vd_detect_period(vocaldetector *vd) {
         period = VD_CIRC_SUB(b_sub, a_sub, (float) VD_BUFFER_SIZE);
 
         // run the correlation
-        correlation = vd_bitstream_correlate(vd, a_pos, b_pos, VD_PERIOD_MAX);
-        //printf("%04zu..%04zu(%04zu) ", a_pos, b_pos, (size_t) correlation);
+        correlation = vd_bitstream_correlate(vd, a_pos, b_pos, period * 2);
+        //printf("%04zu..%04zu(%f) ", a_pos, b_pos, correlation);
 
         if (best_sampled_period == 0 || is_better_period(vd, period, correlation, best_correlation)) {
             best_sampled_period = sampled_period;

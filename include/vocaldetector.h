@@ -41,5 +41,5 @@ void vd_free(vocaldetector *vd);
 int is_valid_block_size(size_t n);
 void vd_print(vocaldetector *vd);
 
-size_t vd_bitstream_correlate(vocaldetector *vd, size_t a_pos, size_t b_pos, size_t n_blocks);
+float vd_bitstream_correlate(vocaldetector *vd, size_t a_pos, size_t b_pos, size_t n_blocks);
 void vd_perform(vocaldetector *vd, float *s, size_t n);
