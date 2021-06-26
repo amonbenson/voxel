@@ -29,6 +29,7 @@ static t_int *voxel_tilde_perform(t_int *w) {
 
     // invoke the vocal detector
     vd_perform(x->vd, in, n);
+    post("freq: %f", 44100 / x->vd->period);
 
     return w;
 }

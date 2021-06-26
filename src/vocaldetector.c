@@ -180,11 +180,9 @@ void vd_perform(vocaldetector *vd, float *s, size_t n) {
 
     // invoke the detector when we've read enough samples
     while (VD_CIRC_DIST(vd->marked_pos, vd->write_pos, VD_BUFFER_SIZE) >= VD_PERIOD_MAX) {
-        //vd_print(vd);
-
         vd_detect_period(vd);
-        printf("period: %f, frequency: %f\n", vd->period, 44100 / vd->period);
 
+        // update the marked position
         vd->marked_pos = VD_CIRC_ADD(vd->marked_pos,
             vd->sampled_period == 0 ? VD_PERIOD_MAX : vd->sampled_period,
             VD_BUFFER_SIZE);
